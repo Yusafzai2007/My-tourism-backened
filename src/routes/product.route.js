@@ -6,6 +6,7 @@ import {
   updateimages,
   getproducts,
   deleteproduct,
+  getsinglecityId,
 } from "../controllers/product.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 const route = Router();
@@ -48,7 +49,12 @@ route.get("/single-citydata/:cityName", getsinglecity);
 
 route.get("/get-products", getproducts);
 
-/////////////////////////////////  delete-products   //////////////////////
+///////////////////  get-products-id //////////////////////
+
+route.get("/get-productsId/:id", getsinglecityId);
+
+///////////////////  get-products-id //////////////////////
+route.get("/get-productsId/:id", getsinglecityId);
 
 route.delete("/delete-products/:id", deleteproduct);
 

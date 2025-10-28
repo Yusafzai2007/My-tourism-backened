@@ -75,12 +75,12 @@ const registerproducts = asynchandler(async (req, res) => {
     }
   }
 
-  if (!cityId && cityName) {
-    city = await City.findOne({ cityName });
-    if (!city) {
-      throw new apiError(404, "your city name is not backened required");
-    }
+ if (!cityId && cityName) {
+  city = await City.findOne({ cityName: cityName.trim() });
+  if (!city) {
+    throw new apiError(404, `City '${cityName}' not found in backend`);
   }
+}
 
   const user = await Product.create({
     city: city._id,
@@ -119,8 +119,6 @@ const registerproducts = asynchandler(async (req, res) => {
 
 const updatecity = asynchandler(async (req, res) => {
   const {
-    cityId,
-    cityName,
     tourservice,
     duration,
     transportService,
@@ -144,42 +142,47 @@ const updatecity = asynchandler(async (req, res) => {
 
   const { id } = req.params;
 
+  // ✅ Extract city info (supports nested "city" object or flat fields)
+  const cityId = req.body.city?.cityId || req.body.cityId;
+  const cityName = req.body.city?.cityName || req.body.cityName;
+
+  // ✅ Validation: Required fields
   if (
-    (!cityId ||
-      !cityName ||
-      !tourservice ||
-      !duration ||
-      !transportService ||
-      !pickup ||
-      !producttitle ||
-      !productdescription ||
-      !discountEndDate ||
-      !quantity ||
-      !discountpercentage ||
-      !discountedtotalprice ||
-      !category,
-    !translatelanguages || !wifi)
+    !tourservice ||
+    !duration ||
+    !transportService ||
+    !pickup ||
+    !producttitle ||
+    !productdescription ||
+    !discountEndDate ||
+    !quantity ||
+    !discountpercentage ||
+    !discountedtotalprice ||
+    !category ||
+    !translatelanguages ||
+    !wifi
   ) {
-    throw new apiError(400, "All fields are required products");
+    throw new apiError(400, "All fields are required for product update");
   }
 
+  // ✅ Find city using ID or Name
   let city;
   if (cityId) {
     city = await City.findById(cityId);
-    if (!city) {
-      throw new apiError(400, "city id is required");
-    }
+    if (!city) throw new apiError(400, "Invalid cityId");
+  } else if (cityName) {
+    city = await City.findOne({ cityName: cityName.trim() });
+    if (!city) throw new apiError(404, `City '${cityName}' not found`);
+  } else {
+    throw new apiError(400, "Either cityId or cityName must be provided");
   }
 
-  if (!cityId && cityName) {
-    city = await City.findOne({ cityName });
-    if (!city) {
-      throw new apiError(400, "your city name is not required is backened");
-    }
-  }
+  console.log("🟢 Request Body:", req.body);
+  console.log("🏙️ City Found:", city);
 
+  // ✅ Prepare update data safely
   const updatecitydata = {
-    city: city._id,
+    ...(city ? { city: city._id } : {}),
     tourservice,
     duration,
     transportService,
@@ -190,9 +193,6 @@ const updatecity = asynchandler(async (req, res) => {
     quantity,
     discountpercentage,
     Isprivate,
-    privateAdultPrice,
-    privateChildPrice,
-    privatetransferprice,
     discountedtotalprice,
     adultbaseprice,
     childbaseprice,
@@ -200,6 +200,8 @@ const updatecity = asynchandler(async (req, res) => {
     translatelanguages,
     wifi,
   };
+
+  // ✅ Handle private tour pricing
   if (Isprivate === true || Isprivate === "true") {
     updatecitydata.privateAdultPrice = privateAdultPrice;
     updatecitydata.privateChildPrice = privateChildPrice;
@@ -209,14 +211,25 @@ const updatecity = asynchandler(async (req, res) => {
     updatecitydata.privateChildPrice = null;
     updatecitydata.privatetransferprice = null;
   }
-  const updatedataproduct = await Product.findByIdAndUpdate(id, {
-    $set: updatecitydata,
-  });
 
+  // ✅ Update product in database
+  const updatedProduct = await Product.findByIdAndUpdate(
+    id,
+    { $set: updatecitydata },
+    { new: true }
+  );
+
+  if (!updatedProduct) {
+    throw new apiError(404, "Product not found for update");
+  }
+
+  // ✅ Send success response
   res
     .status(200)
-    .json(new ApiResponse(200, updatedataproduct, "update data successfully"));
+    .json(new ApiResponse(200, updatedProduct, "Product updated successfully"));
 });
+
+
 
 ////////////////////     update images /////////////////////////////////
 
@@ -309,7 +322,6 @@ const getproducts = asynchandler(async (req, res) => {
     );
 });
 
-
 /////////////////////////   delete-product  ////////////////////////
 
 const deleteproduct = asynchandler(async (req, res) => {
@@ -330,6 +342,34 @@ const deleteproduct = asynchandler(async (req, res) => {
     .json(new ApiResponse(200, deletedata, "deleta data successfully"));
 });
 
+///////////////////////   get-single-city-id  /////////////
+const getsinglecityId = asynchandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    throw new apiError(400, "Product ID is required");
+  }
+
+  const product = await Product.findById(id).populate(
+    "city",
+    "cityName cityImage cityDescription"
+  );
+
+  if (!product) {
+    throw new apiError(404, "Product not found");
+  }
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { Product: product },
+        "Single product data fetched successfully"
+      )
+    );
+});
+
 export {
   registerproducts,
   updatecity,
@@ -337,4 +377,5 @@ export {
   getsinglecity,
   getproducts,
   deleteproduct,
+  getsinglecityId,
 };

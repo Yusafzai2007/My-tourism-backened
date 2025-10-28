@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 const paymentSchema = new mongoose.Schema(
   {
-    order: { 
+    order: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Booking",
       required: true,
@@ -35,7 +35,7 @@ const paymentSchema = new mongoose.Schema(
     transport_type: {
       type: String,
     },
-      total: {
+    total: {
       type: Number,
       default: 0,
     },
@@ -43,7 +43,7 @@ const paymentSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-  
+
     private_child_no: {
       type: Number,
       default: 0,
@@ -66,6 +66,5 @@ const paymentSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
 
 export const Payment = mongoose.model("Payment", paymentSchema);

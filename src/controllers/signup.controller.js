@@ -68,8 +68,8 @@ const loginUser = asynchandler(async (req, res) => {
   const { isaccesstoken, isrefrehtoken } = await generateaccesstoken(
     existlogin._id
   );
-  console.log("isaccesstoken", isaccesstoken);
-  console.log("isrefrehtoken", isrefrehtoken);
+  // console.log("isaccesstoken", isaccesstoken);
+  // console.log("isrefrehtoken", isrefrehtoken);
 
   const loginuser = await signup.findById(existlogin._id).select("-password");
 
@@ -118,4 +118,19 @@ const getusers = asynchandler(async (req, res) => {
     );
 });
 
-export { signupdata, loginUser, logoutUser, getusers };
+const deletUser = asynchandler(async (req, res) => {
+  const { id } = req.params;
+   
+  if (!id) {
+    throw new apiError(400,"bad request")
+  }
+  const dletedata = await signup.findByIdAndDelete(id);
+
+  if (!dletedata) {
+    throw new apiError(500, "server error");
+  }
+
+  res.status(200).json(new ApiResponse(200, "deleted succesfully"));
+});
+
+export { signupdata, loginUser, logoutUser, getusers, deletUser };

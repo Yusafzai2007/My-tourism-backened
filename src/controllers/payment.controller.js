@@ -105,7 +105,7 @@ const singleusers = asynchandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { payments: userPayments },
+        { orders: userPayments },
         "Single user data fetched successfully"
       )
     );
@@ -169,12 +169,11 @@ const updatebookingdata = asynchandler(async (req, res) => {
 
 ///////////////////////////   delete-payment-data ///////////////////////
 
-const deletepayment = asynchandler(async (req,res) => {
+const deletepayment = asynchandler(async (req, res) => {
   const { id } = req.params;
 
-  const deletedata = await Payment.findByIdAndDelete(id);
+  const deletedata = await Payment.findByIdAndDelete({_id:id});
 
- 
   if (!deletedata) {
     throw new apiError(404, "Payment not found");
   }

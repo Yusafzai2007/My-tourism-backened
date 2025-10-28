@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  deletUser,
   getusers,
   loginUser,
   logoutUser,
@@ -12,9 +13,11 @@ const route = Router();
 route.post("/signup", signupdata);
 
 route.post("/login", loginUser);
+route.delete("/deletUser/:id", deletUser);
 
 route.post("/logout", jwtVerify, logoutUser);
 
 route.get("/user", getusers);
 
 export default route;
+ 
