@@ -1,5 +1,7 @@
 import { Router } from "express";
 import {
+  add_Admin,
+  currentuser,
   deletUser,
   getusers,
   loginUser,
@@ -18,6 +20,12 @@ route.delete("/deletUser/:id", deletUser);
 route.post("/logout", jwtVerify, logoutUser);
 
 route.get("/user", getusers);
+
+
+
+route.post("/add_Admin",add_Admin)
+
+route.get("/currentuser",jwtVerify,currentuser)
 
 export default route;
  

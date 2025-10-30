@@ -120,9 +120,9 @@ const getusers = asynchandler(async (req, res) => {
 
 const deletUser = asynchandler(async (req, res) => {
   const { id } = req.params;
-   
+
   if (!id) {
-    throw new apiError(400,"bad request")
+    throw new apiError(400, "bad request");
   }
   const dletedata = await signup.findByIdAndDelete(id);
 
@@ -133,4 +133,50 @@ const deletUser = asynchandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, "deleted succesfully"));
 });
 
-export { signupdata, loginUser, logoutUser, getusers, deletUser };
+const add_Admin = asynchandler(async (req, res) => {
+  const { userName, email, password } = req.body;
+
+  if (!userName || !email || !password) {
+    throw new apiError(404, "All filed are required");
+  }
+
+  const existemail = await signup.findOne({ email });
+
+  if (existemail) {
+    throw new apiError(409, "This Admin email already exist");
+  }
+
+  const admin = await signup.create({
+    userName,
+    email,
+    password,
+    role: "admin",
+  });
+
+  if (!admin) {
+    throw new apiError(500, "server error");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, admin, "admin create successfully"));
+});
+
+const currentuser = asynchandler(async (req, res) => {
+  const user = req.user;
+  if (!user) {
+    throw new apiError(404, "user nto found");
+  }
+
+  res.status(200).json(new ApiResponse(200, { users: user }, "succesfully"));
+});
+
+export {
+  signupdata,
+  loginUser,
+  logoutUser,
+  getusers,
+  deletUser,
+  add_Admin,
+  currentuser,
+};
