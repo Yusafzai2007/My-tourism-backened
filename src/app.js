@@ -12,10 +12,11 @@ const app = express();
 // ✅ Middleware setup
 app.use(
   cors({
-    origin: process.env.Cors_ORIGN || "http://localhost:4200",
+    origin: process.env.CORS_ORIGIN || "http://localhost:4200",
     credentials: true,
   })
 );
+
 
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));

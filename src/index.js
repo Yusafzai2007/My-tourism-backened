@@ -6,12 +6,8 @@ dotenv.config({
   path: "./.env",
 });
 
-connecteddb()
-  .then(() => {
-    app.listen(process.env.PORT || 8000, () => {
-      console.log(process.env.PORT);
-    });
-  })
-  .catch((err) => {
-    console.log(`Error in db connection ${err}`);
-  });
+await connecteddb(); // connect to MongoDB
+
+// ❌ Remove app.listen()
+// ✅ Instead, export the app for Vercel to handle
+export default app;
